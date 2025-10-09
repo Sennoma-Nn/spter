@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# Generates an adaptive-width horizontal separator in the terminal with customizable characters and dynamic line overwriting capability.
+
+usage() {
+    echo "Usage: $0 [-c LINES] [-s CHAR]" >&2
+    echo "  -c LINES  Overwrite previous lines" >&2
+    echo "  -s CHAR   Separator character (default: -)" >&2
+    exit 1
+}
+
+main() {
+    cover=0
+    char="-"
+    
+    while getopts "c:s:" opt; do
+        case $opt in
+            c) cover="$OPTARG" ;;
+            s) char="$OPTARG" ;;
+            *) usage ;;
+        esac
+    done
+    
+    if [ "$(printf '%s' "$char" | wc -m)" -ne 1 ]; then
+        echo "Error: Separator must be a single character." >&2
+        exit 1
+    fi
+    
+    if command -v tput >/dev/null 2>&1; then
+        w=$(tput cols)
+    else
+        w=${COLUMNS:-80}
+    fi
+    
+    if [ "$cover" -gt 0 ]; then
+        printf '\033[%dA\033[0J' "$cover"
+    fi
+    
+    i=0
+    while [ "$i" -lt "$w" ]; do
+        printf '%s' "$char"
+        i=$((i + 1))
+    done
+    printf '\n'
+}
+
+main "$@"

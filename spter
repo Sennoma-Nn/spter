@@ -3,9 +3,10 @@
 # Generates an adaptive-width horizontal separator in the terminal with customizable characters and dynamic line overwriting capability.
 
 usage() {
-    echo "Usage: $0 [-c LINES] [-s CHAR]" >&2
-    echo "  -c LINES  Overwrite previous lines" >&2
-    echo "  -s CHAR   Separator character (default: -)" >&2
+    cmd=$(basename $0)
+    echo "usage: $cmd [-c lines] [-s char]" >&2
+    echo "       $cmd -c [lines]    Overwrite previous lines" >&2
+    echo "       $cmd -s [char]     Separator character (default: -)" >&2
     exit 1
 }
 

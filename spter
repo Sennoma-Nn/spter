@@ -5,8 +5,8 @@
 usage() {
     cmd=$(basename $0)
     echo "usage: $cmd [-c lines] [-s char]" >&2
-    echo "       $cmd -c [lines]" >&2
-    echo "       $cmd -s [char]" >&2
+    echo "       $cmd -c lines" >&2
+    echo "       $cmd -s char" >&2
     exit 1
 }
 

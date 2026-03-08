@@ -37,21 +37,19 @@ Generates a horizontal line using the default character (`-`) that spans the ful
 
 ### Custom Character
 ```bash
-spter --char "="
 spter -s "*"
 ```
 Generates a separator using the specified character.
 
 ### Overwrite Prompt Line
 ```bash
-spter --cover 1
 spter -c 1
 ```
 Overwrites the current prompt line before printing the separator. This creates cleaner output by removing the prompt from view.
 
 **Usage:**
-- `--cover 0` or no cover option: Separator appears below the prompt
-- `--cover 1`: Separator overwrites the prompt line for cleaner output
+- `-c 0` or no cover option: Separator appears below the prompt
+- `-c 1`: Separator overwrites the prompt line for cleaner output
 
 ## Examples
 
@@ -60,10 +58,10 @@ Overwrites the current prompt line before printing the separator. This creates c
 spter
 
 # Double line separator
-spter --char "="
+spter -s "="
 
 # Star separator overwriting 2 previous lines
-spter --char "*" --cover 2
+spter -s "*" -c 2
 
 # Using short options
 spter -s "#" -c 1

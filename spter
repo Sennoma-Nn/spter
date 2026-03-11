@@ -2,10 +2,56 @@
 
 # Generates an adaptive-width horizontal separator in the terminal with customizable characters and dynamic line overwriting capability.
 
+cmd=$(basename $0)
+
 usage() {
-    cmd=$(basename $0)
-    echo "usage: $cmd [-c lines] [-s char]" >&2
+    echo "usage: $cmd [-c lines] [-s string]" >&2
     exit 1
+}
+
+clear_ctrl_char() {
+    sed "s/$(printf '\033')\[[;0-9]*[A-Za-z]//g" | tr -d '\n\r\t'
+}
+
+get_width() {
+    text="$1"
+    
+    old_stty=$(stty -g)
+    stty raw -echo min 0 time 1
+
+    printf "\r\033[6n" >&2
+
+    res_start=""
+    while :; do
+        char=$(dd bs=1 count=1 2>/dev/null)
+        [ "$char" = "R" ] && break
+        res_start="${res_start}${char}"
+    done
+    
+    old_ifs="$IFS"
+    IFS=';'
+    set -- $res_start
+    start_col=$2
+    IFS="$old_ifs"
+
+    printf "%s\033[6n" "$text" >&2
+    
+    res_end=""
+    while :; do
+        char=$(dd bs=1 count=1 2>/dev/null)
+        [ "$char" = "R" ] && break
+        res_end="${res_end}${char}"
+    done
+
+    IFS=';'
+    set -- $res_end
+    end_col=$2
+    IFS="$old_ifs"
+
+    printf "\r\033[K" >&2
+    stty "$old_stty"
+
+    echo $((end_col - start_col))
 }
 
 main() {
@@ -19,24 +65,24 @@ main() {
             *) usage ;;
         esac
     done
-    
-    if [ "$(printf '%s' "$char" | wc -m)" -ne 1 ]; then
-        echo "Error: Separator must be a single character." >&2
+
+    char="$(printf '%s' "$char" | clear_ctrl_char)"
+    char_w=$(get_width "$char")
+
+    if [ $char_w -lt 1 ]; then
+        echo "$cmd: Invalid argument for -s" >&2
         exit 1
     fi
     
-    if command -v tput >/dev/null 2>&1; then
-        w=$(tput cols)
-    else
-        w=${COLUMNS:-80}
-    fi
+    ter_w=$(tput cols)
+    loop=$(($ter_w / char_w))
     
     if [ "$cover" -gt 0 ]; then
         printf '\033[%dA\033[0J' "$cover"
     fi
     
     i=0
-    while [ "$i" -lt "$w" ]; do
+    while [ "$i" -lt "$loop" ]; do
         printf '%s' "$char"
         i=$((i + 1))
     done

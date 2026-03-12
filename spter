@@ -10,17 +10,17 @@ usage() {
 }
 
 clear_ctrl_char() {
-    sed "s/$(printf '\033')\[[;0-9]*[A-Za-z]//g" | tr -d '\n\r\t\v'
+    sed "s/$(printf '\033')\[[;0-9]*[A-Za-z]//g" | tr -d '\n\r\t\v\f'
 }
 
 get_width() {
     text="$1"
-    
     old_stty=$(stty -g)
+
+    trap "stty '$old_stty'; exit" EXIT INT TERM
     stty raw -echo min 0 time 1
 
     printf "\r\033[6n" >&2
-
     res_start=""
     while :; do
         char=$(dd bs=1 count=1 2>/dev/null)
@@ -35,7 +35,6 @@ get_width() {
     IFS="$old_ifs"
 
     printf "%s\033[6n" "$text" >&2
-    
     res_end=""
     while :; do
         char=$(dd bs=1 count=1 2>/dev/null)
@@ -50,6 +49,7 @@ get_width() {
 
     printf "\r\033[K" >&2
     stty "$old_stty"
+    trap - EXIT INT TERM
 
     echo $((end_col - start_col))
 }

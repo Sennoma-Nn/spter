@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Generates an adaptive-width horizontal separator in the terminal with customizable characters and dynamic line overwriting capability.
+# Generates an adaptive-width horizontal separator in the terminal with customizable string and dynamic line overwriting capability.
 
 cmd=$(basename $0)
 
@@ -20,7 +20,7 @@ get_width() {
     trap "stty '$old_stty'; exit" EXIT INT TERM
     stty raw -echo min 0 time 1
 
-    printf "\r\033[6n" >&2
+    printf "\033[s\r\033[6n" >&2
     res_start=""
     while :; do
         char=$(dd bs=1 count=1 2>/dev/null)
@@ -30,7 +30,8 @@ get_width() {
     
     old_ifs="$IFS"
     IFS=';'
-    set -- $res_start
+    set -- ${res_start#*[}
+    start_row=$1
     start_col=$2
     IFS="$old_ifs"
 
@@ -43,50 +44,54 @@ get_width() {
     done
 
     IFS=';'
-    set -- $res_end
+    set -- ${res_end#*[}
+    end_row=$1
     end_col=$2
     IFS="$old_ifs"
 
-    printf "\r\033[K" >&2
+    printf "\033[u\r\033[K" >&2
     stty "$old_stty"
     trap - EXIT INT TERM
+
+    [ "$start_row" -ne "$end_row" ] && return 1
 
     echo $((end_col - start_col))
 }
 
-main() {
-    cover=0
-    char="-"
-    
-    while getopts "c:s:" opt; do
-        case $opt in
-            c) cover="$OPTARG" ;;
-            s) char="$OPTARG" ;;
-            *) usage ;;
-        esac
-    done
+cover=0
+char="-"
 
-    char="$(printf '%s' "$char" | clear_ctrl_char)"
-    char_w=$(get_width "$char")
+while getopts "c:s:" opt; do
+    case $opt in
+        c) cover="$OPTARG" ;;
+        s) char="$OPTARG" ;;
+        *) usage ;;
+    esac
+done
 
-    if [ $char_w -lt 1 ]; then
-        echo "$cmd: Invalid argument for -s" >&2
-        exit 1
-    fi
-    
-    ter_w=$(tput cols)
-    loop=$(($ter_w / char_w))
-    
-    if [ "$cover" -gt 0 ]; then
-        printf '\033[%dA\033[0J' "$cover"
-    fi
-    
-    i=0
-    while [ "$i" -lt "$loop" ]; do
-        printf '%s' "$char"
-        i=$((i + 1))
-    done
-    printf '\n'
-}
+if [ ! -t 0 ] || [ -z "$TERM" ] || [ "$TERM" = "dumb" ]; then
+    echo "$cmd: Terminal is not supported" >&2
+    exit 1
+fi
 
-main "$@"
+char="$(printf '%s' "$char" | clear_ctrl_char)"
+char_w=$(get_width "$char")
+exit_code=$?
+if [ $exit_code -eq 1 ] || [ "$char_w" -lt 1 ]; then
+    echo "$cmd: Invalid argument for -s" >&2
+    exit 1
+fi
+
+ter_w=$(tput cols)
+loop=$((ter_w / char_w))
+
+if [ "$cover" -gt 0 ]; then
+    printf '\r\033[%dA\033[0J' "$cover"
+fi
+
+i=0
+while [ "$i" -lt "$loop" ]; do
+    printf '%s' "$char"
+    i=$((i + 1))
+done
+printf '\n'

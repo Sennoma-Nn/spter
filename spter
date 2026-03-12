@@ -10,7 +10,7 @@ usage() {
 }
 
 clear_ctrl_char() {
-    sed "s/$(printf '\033')\[[;0-9]*[A-Za-z]//g" | tr -d '\n\r\t'
+    sed "s/$(printf '\033')\[[;0-9]*[A-Za-z]//g" | tr -d '\n\r\t\v'
 }
 
 get_width() {

@@ -1,48 +1,48 @@
 # spter - Terminal Separator Generator
 
-A lightweight shell script that generates adaptive-width horizontal separators in the terminal with customizable characters and dynamic line overwriting capability.
+A lightweight shell script that generates adaptive-width horizontal separators in the terminal with customizable string and dynamic line overwriting capability.
 
 ## Features
 
 - **Adaptive Width**: Automatically adjusts to your terminal width
-- **Customizable Characters**: Use any single character as separator
+- **Customizable String**: Use any single string as separator
 - **Line Overwriting**: Option to overwrite previous lines for cleaner output
 - **Lightweight**: Single-file implementation with no dependencies
 
 ## Installation
 
 1. Make the script executable:
-```bash
+```shell
 chmod +x spter
 ```
 
 2. Move it to your local bin directory (recommended):
-```bash
+```shell
 mkdir -p ~/.local/bin
 mv spter ~/.local/bin/
 ```
 
 3. Ensure `~/.local/bin` is in your PATH (add to your shell config if needed):
-```bash
+```shell
 export PATH="$HOME/.local/bin:$PATH"
 ```
 
 ## Usage
 
 ### Basic Usage
-```bash
+```shell
 spter
 ```
-Generates a horizontal line using the default character (`-`) that spans the full terminal width.
+Generates a horizontal line using the default string (`-`) that spans the full terminal width.
 
-### Custom Character
-```bash
+### Custom String
+```shell
 spter -s "*"
 ```
-Generates a separator using the specified character.
+Generates a separator using the specified string.
 
 ### Overwrite Prompt Line
-```bash
+```shell
 spter -c 1
 ```
 Overwrites the current prompt line before printing the separator. This creates cleaner output by removing the prompt from view.
@@ -53,7 +53,7 @@ Overwrites the current prompt line before printing the separator. This creates c
 
 ## Examples
 
-```bash
+```shell
 # Simple separator
 spter
 
